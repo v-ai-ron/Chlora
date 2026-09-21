@@ -1,0 +1,7 @@
+# Dipendenze di sistema sul Raspberry Pi 5 (preferite rispetto a pip):
+#   sudo apt install python3-gpiozero python3-lgpio python3-smbus2
+#
+# pip, se serve un virtualenv sul Pi:
+gpiozero>=2.0.1
+lgpio>=0.2.2.0
+smbus2>=0.4.3

@@ -1,0 +1,17 @@
+[Unit]
+Description=Chlora, controllo torbidità e pompa di filtraggio
+After=multi-user.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+SupplementaryGroups=gpio i2c
+WorkingDirectory=/opt/chlora/firmware
+ExecStart=/usr/bin/python3 -m chlora
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#121916" />
+    <title>Chlora</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="is-booting">
+    <div class="panel" aria-busy="true">
+      <header>
+        <div class="brand">
+          <h1>Chlora</h1>
+          <p class="organism"><em>Chlorella vulgaris</em>, 10 L</p>
+        </div>
+        <p class="clock" id="clock">--:--:--</p>
+      </header>
+
+      <div class="main">
+        <p class="fault" id="fault" hidden></p>
+        <p class="boot" id="boot">Lettura in corso</p>
+
+        <section class="cycle-block" aria-labelledby="cycle-title">
+          <h2 id="cycle-title">Ciclo delle alghe</h2>
+          <p class="phase-now" id="phase-now"></p>
+          <p class="phase-copy" id="phase-copy"></p>
+          <ol class="cycle">
+            <li data-phase="latenza">Latenza</li>
+            <li data-phase="crescita">Crescita</li>
+            <li data-phase="picco">Picco</li>
+            <li data-phase="raccolta">Raccolta</li>
+            <li data-phase="recupero">Recupero</li>
+          </ol>
+        </section>
+
+        <div class="readings">
+          <section class="read" id="turbidity-block" aria-labelledby="turb-title">
+            <h2 id="turb-title">Torbidità</h2>
+            <p class="figure">
+              <span id="ntu"></span>
+              <span class="unit">NTU</span>
+            </p>
+            <p class="meta" id="ntu-meta"></p>
+            <canvas class="history" id="history" aria-hidden="true"></canvas>
+          </section>
+
+          <section class="read" aria-labelledby="o2-title">
+            <h2 id="o2-title">Ossigeno stimato</h2>
+            <p class="figure figure-o2">
+              <span id="o2-rate"></span>
+              <span class="unit" id="o2-unit">mg/h</span>
+            </p>
+            <p class="meta" id="o2-today"></p>
+          </section>
+        </div>
+      </div>
+
+      <section class="filter" aria-labelledby="filter-title">
+        <div class="filter-copy">
+          <h2 id="filter-title">Filtraggio</h2>
+          <p class="pump" id="pump-state">Pompa ferma</p>
+          <p class="meta">Filtro da 5 µm sulla linea della pompa.</p>
+          <p class="meta" id="filter-reason"></p>
+          <p class="meta" id="filter-time"></p>
+        </div>
+        <div class="actions">
+          <button type="button" data-mode="auto" aria-pressed="true" disabled>Automatico</button>
+          <button type="button" data-mode="on" aria-pressed="false" disabled>Accendi</button>
+          <button type="button" data-mode="off" aria-pressed="false" disabled>Spegni</button>
+        </div>
+      </section>
+
+      <p class="sr" id="live" aria-live="polite"></p>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

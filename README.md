@@ -4,7 +4,7 @@
 [![Hardware](https://img.shields.io/badge/Hardware-3D__Printable-blueviolet)](https://github.com/)
 [![Platform](https://img.shields.io/badge/Platform-Raspberry__Pi-brightgreen)](https://www.raspberrypi.com/)
 
-**Chlora** is an open-source, closed-loop domestic photobioreactor designed to purify indoor air, sequester $CO_2$, and produce oxygen. Fully replicable and 3D-printable, the system is automated via a Raspberry Pi to bring industrial-grade bioreaction into the home.
+**Chlora** is an open-source, closed-loop domestic photobioreactor designed to purify indoor air, sequester $CO_2$, and produce oxygen. Fully replicable and 3D-printable, the system is automated via a Raspberry Pi 5 to bring industrial-grade bioreaction into the home.
 
 The biological core of Chlora relies on the microalgae *Chlorella vulgaris*. With just 10 liters of culture, this compact system matches the daily photosynthetic efficiency of 1 to 2 medium-sized indoor trees.
 
@@ -12,34 +12,66 @@ The biological core of Chlora relies on the microalgae *Chlorella vulgaris*. Wit
 
 ## How It Works
 
-1. **Environmental Optimization:** The Raspberry Pi continuously monitors the culture using low-cost sensors (Turbidity, pH, and Temperature).
-2. **Automated Harvesting:** When the algal density reaches its optimal peak, the system triggers a micro-pump to push the fluid through a 5-micron filtering network.
-3. **Circular Biomass:** A pneumatic backwash system extracts a concentrated algae paste, ready to be used immediately as an organic biofertilizer for household plants.
-4. **IoT Ecosystem:** A live Wi-Fi connection streams real-time data to an IoT app, sending notifications regarding filtration status and culture health.
+1. **Turbidity:** The Pi 5 reads an optical turbidity probe over I2C. The probe is analog; an ADS1115 on bus 1 (address `0x48`) is what the Pi actually talks to.
+2. **Filtration:** A relay board on GPIO 17 switches the aquarium pump. The pump starts when turbidity crosses 280 NTU and stops below 90 NTU, so the relay does not chatter. A missing sensor forces the pump off.
+3. **Algae cycle:** The same reading places the culture in lag, growth, peak, harvest, or recovery.
+4. **Oxygen:** The panel reports oxygen production from turbidity and the 10 L culture. The yield is in `firmware/chlora/config.py`.
+5. **Screen:** The touch display, or any HDMI panel, opens a local kiosk page with cycle phase, turbidity, filter controls, and oxygen production.
+
+The 5 µm filter sits on the harvest line. The controller reads turbidity and drives the pump relay.
 
 ---
 
 ## Hardware & Components
 
-Chlora is designed to be accessible and affordable. The main stack includes:
+*   **Brain:** Raspberry Pi 5
+*   **Screen:** Raspberry Pi Touch Display 2 (DSI) or an HDMI display
+*   **Culture:** *Chlorella vulgaris*, 10 L
+*   **Turbidity:** analog optical probe, digitized by an ADS1115 on I2C
+*   **Pump board:** active-low relay module, GPIO 17, switching the pump's own supply
+*   **Filter:** 5 µm mesh on the harvest line
 
-*   **Brain:** Raspberry Pi (3/4/Zero W)
-*   **Biological Agent:** *Chlorella vulgaris* culture (10L)
-*   **Sensors:** 
-    *   Analog Turbidity Sensor (for density tracking)
-    *   pH Sensor Kit
-    *   DS18B20 Temperature Sensor
-*   **Actuators:** Peristaltic/Micro water pump, pneumatic valve/air pump.
-*   **Filtration:** 5-micron mesh network.
-*   **Chassis:** 100% 3D-printable enclosure and mechanical parts.
+Wiring: `electronics/README.md`. Mechanical notes: `hardware/README.md`.
+
+---
+
+## Run
+
+```bash
+cd firmware
+python3 -m chlora
+```
+
+The panel is at `http://127.0.0.1:8080/`. On the Pi 5 the same process owns the ADS1115 and the pump relay.
+
+Install the system packages, enable I2C, and let the service own the GPIO:
+
+```bash
+sudo apt install python3-gpiozero python3-lgpio python3-smbus2 chromium
+sudo mkdir -p /opt/chlora
+sudo cp -a firmware display /opt/chlora/
+sudo cp /opt/chlora/firmware/chlora.service /etc/systemd/system/chlora.service
+sudo systemctl enable --now chlora.service
+```
+
+Edit `User=` in the unit if the login is not `pi`. The desktop session should autologin and launch `firmware/kiosk.sh` (see `electronics/README.md`).
+
+```bash
+cd firmware
+python3 -m unittest discover -s tests -v
+```
 
 ---
 
 ## Repository Structure
 
 ```text
-├── hardware/          # .STL files, 3D models, and printing instructions
-├── electronics/       # Wiring diagrams and schematic PDFs
-├── firmware/          # Python scripts for Raspberry Pi and sensor reading
-├── web-app/           # IoT Dashboard source code (HTML/CSS/JS or Framework)
+├── hardware/          # vessel, pump, filter, screen (mechanical notes)
+├── electronics/       # Pi 5 pinout, ADS1115, relay board, kiosk
+├── firmware/          # control loop, I2C turbidity, pump relay, tests
+│   └── chlora/
+│       ├── hardware/  # ADS1115 probe, pump relay, vessel balance
+│       └── control/   # algae cycle, filter hysteresis, oxygen estimate
+├── display/           # kiosk page served on the Pi screen
 └── LICENSE            # MIT License
+```
